@@ -1,0 +1,49 @@
+version: '3'
+services: 
+  workspace:
+    container_name: workspace
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports: 
+      - 9090:9090
+    volumes: 
+      - ./workspace:/go/src/app
+      # sqlite3永続化
+      - ./sqlite3:/var/tmp
+    stdin_open: true
+    tty: true
+  
+  # MySQL
+  mysql:
+    container_name: mysql
+    image: mysql:8.0
+    environment: 
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test_database
+      MYSQL_USER: docker
+      MYSQL_PASSWORD: docker
+      TZ: 'Asia/Tokyo'
+    command: --default-authentication-plugin=mysql_native_password
+    volumes: 
+      # 永続化するときにマウントするdir
+      - ./mysql/data:/var/lib/mysql
+      # 起動時に実行されるsqlがあるdir
+      - ./mysql/mysql_init:/docker-entrypoint-initdb.d
+      # config file
+      - ./mysql/mysql_conf:/etc/mysql/conf.d
+    ports: 
+      - 3306:3306
+
+  # phpMyAdmin
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    environment: 
+      - PMA_ARBITRARY=1
+      - PMA_HOSTS=mysql
+      - PMA_USR=root
+      - PMA_PASSWORD=root
+    ports: 
+      - 8080:80
+
