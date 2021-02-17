@@ -1,0 +1,41 @@
+version: '3'
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    volumes:
+      - .:/go/src/app
+    tty: true
+
+
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gotest
+      PGDATA: /tmp
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./postgresql/sql_init:/docker-entrypoint-initdb.d
+    ports:
+      - 5432:5432
+
+
+  pgadmin4:
+    image: dpage/pgadmin4:4.3
+    container_name: pgadmin4
+    ports:
+      - 5050:80
+      - 443:443
+    environment: 
+      PGADMIN_DEFAULT_EMAIL: root
+      PGADMIN_DEFAULT_PASSWORD: root
+    volumes: 
+      - ./data:/var/lib/pgadmin
+    restart: always
